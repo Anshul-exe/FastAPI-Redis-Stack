@@ -61,19 +61,4 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            set -euo pipefail
-
-            cd /opt/taskapi
-
-            # Pull the latest code (docker-compose files, configs, scripts)
-            git pull origin main
-
-            # Pull the newly published image from GHCR
-            docker compose -f compose/docker-compose.prod.yml pull
-
-            # Recreate changed containers; remove containers for removed services
-            docker compose -f compose/docker-compose.prod.yml up -d --remove-orphans
-
-            # Print running service status for the Actions log
-            docker compose -f compose/docker-compose.prod.yml ps
+          script: bash /opt/taskapi/scripts/deploy-zero-downtime.sh
