@@ -3,6 +3,7 @@ import logging
 import time
 
 from fastapi import FastAPI, Request
+from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi.responses import JSONResponse
 from redis.exceptions import RedisError
 from sqlalchemy import text
@@ -37,6 +38,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Task Management API", lifespan=lifespan)
+Instrumentator().instrument(app).expose(app)
 app.include_router(tasks_router)
 
 
