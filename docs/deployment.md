@@ -7,7 +7,7 @@ This document provides a complete walkthrough for provisioning a fresh VPS and d
 - **Compute**: A fresh VPS (e.g., AWS EC2 t2.micro) running **Ubuntu 24.04**.
 - **Networking**: Security group / firewall configured to allow inbound traffic on ports `22` (SSH), `80` (HTTP), and `443` (HTTPS).
 - **Access**: An SSH key pair to connect to the server.
-- **DNS**: An `A` record pointing `stack.anshulfml.me` to the public IP address of your server.
+- **DNS**: An `A` record pointing `api.example.com` to the public IP address of your server.
 
 ---
 
@@ -16,7 +16,7 @@ This document provides a complete walkthrough for provisioning a fresh VPS and d
 SSH into the VPS as a user with `sudo` privileges (typically `ubuntu` on EC2) and run the setup script. This script handles system updates, installs Docker and UFW, sets firewall rules, creates backup directories, and clones the repository.
 
 ```bash
-sudo curl -sO https://raw.githubusercontent.com/Anshul-exe/FastAPI-Redis-Stack/main/scripts/setup-vps.sh
+sudo curl -sO https://raw.githubusercontent.com/<your-username>/FastAPI-Redis-Stack/main/scripts/setup-vps.sh
 sudo bash setup-vps.sh
 ```
 
@@ -49,7 +49,7 @@ To bootstrap:
 3. Once NGINX is serving HTTP, run the initial Certbot command to generate the certs in the named Docker volumes:
 
 ```bash
-docker run --rm -v certbot_certs:/etc/letsencrypt -v certbot_webroot:/var/www/certbot certbot/certbot certonly --webroot -w /var/www/certbot -d stack.anshulfml.me --email anshulchauhan1224@gmail.com --agree-tos --no-eff-email
+docker run --rm -v certbot_certs:/etc/letsencrypt -v certbot_webroot:/var/www/certbot certbot/certbot certonly --webroot -w /var/www/certbot -d api.example.com --email <your-email@example.com> --agree-tos --no-eff-email
 ```
 
 4. Stop NGINX and restore the full configuration containing the HTTPS block.
@@ -101,6 +101,26 @@ You will need to set:
 - `VPS_HOST`
 - `VPS_USER`
 - `VPS_SSH_KEY`
+
+---
+
+## Step 8: Zero-Downtime Deployments
+
+To ensure continuous availability, the project includes a zero-downtime deployment script (`scripts/deploy-zero-downtime.sh`).
+This script works by:
+1. Scaling the `app` service to 2 replicas (leaving the old container running).
+2. Polling `docker compose ps --format json` to ensure the new container is healthy before proceeding.
+3. Terminating the exact `OLD_CONTAINER_ID` once the new one is verified.
+4. If health checks fail (timeout), stopping the new unhealthy container and rolling back cleanly without touching the old container.
+
+**NGINX DNS Resolver Quirk:**
+Docker's embedded DNS usually resolves an upstream hostname (`app`) once at container startup. To route traffic dynamically without restarting NGINX during the scale up/down, NGINX is configured to force re-resolution:
+```nginx
+resolver 127.0.0.11 valid=10s;
+set $upstream app;
+proxy_pass http://$upstream:8000;
+```
+This ensures NGINX re-checks the internal DNS IP for `app` periodically instead of caching a stale container IP.
 
 ---
 

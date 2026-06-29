@@ -1,6 +1,7 @@
 flowchart TD
     subgraph Client [Client]
         Internet([Internet])
+        Cloudflare([Cloudflare DNS/Proxy])
     end
 
     subgraph GitHub [GitHub]
@@ -8,18 +9,28 @@ flowchart TD
         GHCR[(GHCR)]
     end
 
-    subgraph VPS [VPS / Docker Compose]
-        NGINX[NGINX]
-        Certbot[Certbot]
-        FastAPI[FastAPI App]
-        PostgreSQL[(PostgreSQL)]
-        Redis[(Redis)]
+    subgraph VPS [VPS Host]
+        Fail2Ban[fail2ban]
+        subgraph Docker Compose
+            NGINX[NGINX]
+            Certbot[Certbot]
+            FastAPI[FastAPI App]
+            PostgreSQL[(PostgreSQL)]
+            Redis[(Redis)]
+            Prometheus[Prometheus]
+            Grafana[Grafana]
+        end
     end
 
-    Internet -- "HTTP/HTTPS (port 80/443)" --> NGINX
+    Internet -- "HTTPS" --> Cloudflare
+    Cloudflare -- "HTTPS (port 443) proxied" --> NGINX
     NGINX -- "HTTP (port 8000, internal)" --> FastAPI
-    FastAPI -- "SQL queries (port 5432, internal)" --> PostgreSQL
-    FastAPI -- "Cache read/write (port 6379, internal)" --> Redis
+    FastAPI -- "SQL queries (port 5432)" --> PostgreSQL
+    FastAPI -- "Cache read/write (port 6379)" --> Redis
+    
+    Prometheus -- "Scrapes metrics" --> FastAPI
+    Grafana -- "Queries metrics" --> Prometheus
+    Fail2Ban -. "Monitors logs & Bans IPs" .-> NGINX
     
     GHA -- "Build/push image" --> GHCR
     GHA -- "Deploy via SSH" --> NGINX

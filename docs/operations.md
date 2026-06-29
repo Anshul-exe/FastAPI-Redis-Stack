@@ -85,7 +85,7 @@ Prometheus and Grafana run inside the Docker Compose stack but **do not expose p
 
 Open an SSH tunnel from your local machine:
 ```bash
-ssh -L 3000:localhost:3000 -i ~/.ssh/EC2Tutorial.pem ubuntu@13.233.150.221
+ssh -L 3000:localhost:3000 -i ~/.ssh/<your-ssh-key.pem> ubuntu@<your-vps-ip>
 ```
 Then open `http://localhost:3000` in your browser.
 
@@ -99,7 +99,7 @@ A pre-provisioned "FastAPI Task Management API" dashboard is available immediate
 
 Open an SSH tunnel from your local machine:
 ```bash
-ssh -L 9090:localhost:9090 -i ~/.ssh/EC2Tutorial.pem ubuntu@13.233.150.221
+ssh -L 9090:localhost:9090 -i ~/.ssh/<your-ssh-key.pem> ubuntu@<your-vps-ip>
 ```
 Then open `http://localhost:9090` in your browser.
 

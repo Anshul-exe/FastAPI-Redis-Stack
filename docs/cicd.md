@@ -40,9 +40,8 @@ Push to main
 │  SSH into VPS, then:            │
 │  1. git pull origin main        │
 │  2. docker compose pull         │
-│  3. docker compose up -d        │
-│     --remove-orphans            │
-│  4. docker compose ps           │
+│  3. bash scripts/               │
+│     deploy-zero-downtime.sh     │
 └─────────────────────────────────┘
 ```
 
@@ -211,7 +210,7 @@ docker compose -f /opt/taskapi/compose/docker-compose.prod.yml ps
 docker compose -f /opt/taskapi/compose/docker-compose.prod.yml logs --tail=50 --follow app
 
 # Hit the health endpoint
-curl -f https://stack.anshulfml.me/health
+curl -f https://api.example.com/health
 ```
 
 ---

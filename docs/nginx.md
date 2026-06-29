@@ -16,6 +16,18 @@ NGINX is configured to listen on port 80 (HTTP) globally. Its only function on p
 ## SSL Termination
 NGINX handles the decryption of all inbound HTTPS traffic using Let's Encrypt certificates. It then communicates with the FastAPI container over plain HTTP on the internal Docker network. This offloads cryptographic overhead from the Python application and centralizes certificate management.
 
+## Cloudflare Integration
+The domain is proxied through Cloudflare (orange-clouded) with the SSL mode set to **Full (strict)**. This ensures that traffic between Cloudflare's edge and the origin VPS is encrypted via the Let's Encrypt certificate. To ensure rate-limiting uses the actual client's IP rather than Cloudflare's edge IPs, NGINX is configured to trust Cloudflare's IP ranges (`set_real_ip_from`) and extract the real client IP from the `CF-Connecting-IP` header.
+
+## Dynamic Upstream Resolution
+To support zero-downtime deployments, NGINX must route traffic to newly scaled containers dynamically. Because NGINX caches upstream IPs at startup, we use a variable in `proxy_pass` combined with Docker's embedded DNS resolver (`127.0.0.11`):
+```nginx
+resolver 127.0.0.11 valid=10s;
+set $upstream app;
+proxy_pass http://$upstream:8000;
+```
+This forces NGINX to re-resolve the `app` hostname every 10 seconds, seamlessly adapting to container ID changes during scaling.
+
 ## Security Headers
 The following headers are injected by NGINX into every response:
 - **`Strict-Transport-Security (HSTS)`**: Forces browsers to only connect via HTTPS for the specified duration (1 year), preventing protocol downgrade attacks.

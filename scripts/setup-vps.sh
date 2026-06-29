@@ -32,9 +32,9 @@ chown -R ubuntu:ubuntu /opt/backups/postgres/
 
 echo "Cloning the repository..."
 if [ ! -d "/opt/taskapi" ]; then
-    git clone "$REPO_URL" /opt/taskapi/
+  git clone "$REPO_URL" /opt/taskapi/
 else
-    echo "Directory /opt/taskapi already exists. Skipping clone."
+  echo "Directory /opt/taskapi already exists. Skipping clone."
 fi
 chown -R ubuntu:ubuntu /opt/taskapi/
 

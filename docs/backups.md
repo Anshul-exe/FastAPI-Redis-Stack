@@ -34,7 +34,7 @@ Documents the backup strategy for the Task Management API: what is backed up, ho
 Backups are stored on the VPS local filesystem. The directory is created automatically by the script on first run.
 
 > [!WARNING]
-> Local-only backups are a single point of failure. For production, consider syncing `/opt/backups/postgres/` to an off-site destination (e.g. an S3-compatible bucket via `rclone` or `aws s3 sync`) after each successful run.
+> This setup relies entirely on local-only backups by design. Integrating with cloud storage like S3 was explicitly excluded to avoid added cloud cost, complexity, and expanded credential surface area for an assignment-scope project. (For a true production environment, consider syncing `/opt/backups/postgres/` to an off-site destination like an S3 bucket after each successful run).
 
 ---
 
