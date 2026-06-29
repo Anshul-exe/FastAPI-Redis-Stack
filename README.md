@@ -13,6 +13,17 @@ A production-grade, RESTful web service for managing tasks, built to demonstrate
 | **Containerization**      | Docker & Docker Compose |
 | **CI/CD**                 | GitHub Actions          |
 
+## Production & Engineering Highlights
+
+This project goes beyond a basic Docker deployment by implementing robust, real-world DevOps practices:
+
+- **Zero-Downtime Deployments:** Features a custom CI/CD deployment script that scales containers, performs deterministic health checks on new replicas via `jq` & `docker compose ps`, and routes traffic dynamically via a custom NGINX DNS resolver—ensuring zero dropped requests during updates.
+- **Advanced Security & fail2ban:** Secured at the host level with UFW (default deny). A custom `fail2ban` jail and filter parse Docker's JSON NGINX logs, automatically banning malicious IPs exhibiting repeated 4xx/5xx errors.
+- **Cloudflare Edge Integration:** DNS is proxied via Cloudflare with "Full (strict)" SSL. NGINX is configured to trust Cloudflare's edge ranges and accurately extract the real client IP via the `CF-Connecting-IP` header for precise rate limiting and logging.
+- **Host-Bound Monitoring:** Integrated Prometheus and Grafana for full observability. To maintain a zero-trust external footprint, these services do not expose ports to the public internet; they are bound exclusively to `127.0.0.1` and accessed via secure SSH tunnels.
+- **Redis Rate-Limiting & Caching:** The FastAPI app utilizes a Redis-backed token bucket algorithm for IP-based rate limiting, protecting the Postgres database from volumetric abuse while providing read-through caching for high-traffic endpoints.
+- **Automated Local Backups:** A robust cron-scheduled bash script executes `pg_dump` securely within the Docker network, compressing and rotating backups on the host filesystem with a 7-day retention policy.
+
 ## Documentation Quick Links
 
 - [Architecture Overview](docs/architecture.md)
@@ -41,7 +52,7 @@ The API is served at the root domain (`/`).
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/Anshul-exe/FastAPI-Redis-Stack.git
+   git clone https://github.com/<your-username>/FastAPI-Redis-Stack.git
    cd FastAPI-Redis-Stack
    ```
 
