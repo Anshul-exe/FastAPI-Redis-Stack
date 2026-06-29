@@ -76,3 +76,42 @@ Check the size of your automated database backups:
 ls -lh /opt/backups/postgres/
 du -sh /opt/backups/postgres/
 ```
+
+## Monitoring
+
+Prometheus and Grafana run inside the Docker Compose stack but **do not expose ports to the public internet**. Access them securely via SSH tunnels from your local machine.
+
+### Accessing Grafana (Dashboards)
+
+Open an SSH tunnel from your local machine:
+```bash
+ssh -L 3000:localhost:3000 -i ~/.ssh/EC2Tutorial.pem ubuntu@13.233.150.221
+```
+Then open `http://localhost:3000` in your browser.
+
+**Default login:**
+- Username: `admin`
+- Password: the value of `GRAFANA_PASSWORD` from your `.env` file
+
+A pre-provisioned "FastAPI Task Management API" dashboard is available immediately with three panels: request rate, p95 latency, and request counts by endpoint/status.
+
+### Accessing Prometheus (Metrics & Targets)
+
+Open an SSH tunnel from your local machine:
+```bash
+ssh -L 9090:localhost:9090 -i ~/.ssh/EC2Tutorial.pem ubuntu@13.233.150.221
+```
+Then open `http://localhost:9090` in your browser.
+
+### Verifying Metrics Are Being Scraped
+
+1. Open the Prometheus UI via the SSH tunnel above.
+2. Navigate to **Status → Targets** (`http://localhost:9090/targets`).
+3. Confirm both targets show **State: UP**:
+   - `fastapi` → `app:8000` (the FastAPI application)
+   - `prometheus` → `localhost:9090` (Prometheus self-monitoring)
+
+If a target shows **DOWN**, check that the corresponding container is running:
+```bash
+docker compose -f compose/docker-compose.prod.yml ps
+```
