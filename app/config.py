@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = Field(min_length=1)
     REDIS_URL: str = Field(min_length=1)
     RATE_LIMIT_PER_MINUTE: int = Field(default=100, ge=1)
+    LOG_LEVEL: str = Field(default="INFO")
 
 
 @lru_cache(maxsize=1)
