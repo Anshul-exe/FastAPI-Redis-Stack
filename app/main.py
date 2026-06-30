@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     init_db()
     logger.info(
-        "Task Management API starting up (log_level=%s, rate_limit=%d req/min)",
+        "Task Management API starting up - (log_level=%s, rate_limit=%d req/min)",
         settings.LOG_LEVEL.upper(),
         settings.RATE_LIMIT_PER_MINUTE,
     )
