@@ -1,0 +1,27 @@
+flowchart TD
+    subgraph Client [Client]
+        Internet([Internet])
+    end
+
+    subgraph GitHub [GitHub]
+        GHA[GitHub Actions]
+        GHCR[(GHCR)]
+    end
+
+    subgraph VPS [VPS / Docker Compose]
+        NGINX[NGINX]
+        Certbot[Certbot]
+        FastAPI[FastAPI App]
+        PostgreSQL[(PostgreSQL)]
+        Redis[(Redis)]
+    end
+
+    Internet -- "HTTP/HTTPS (port 80/443)" --> NGINX
+    NGINX -- "HTTP (port 8000, internal)" --> FastAPI
+    FastAPI -- "SQL queries (port 5432, internal)" --> PostgreSQL
+    FastAPI -- "Cache read/write (port 6379, internal)" --> Redis
+    
+    GHA -- "Build/push image" --> GHCR
+    GHA -- "Deploy via SSH" --> NGINX
+    
+    Certbot <-->|"Cert volume shared"| NGINX
