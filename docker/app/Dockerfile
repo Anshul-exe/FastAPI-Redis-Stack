@@ -1,14 +1,14 @@
 FROM python:3.12-slim AS builder
 
-WORKDIR /app
+WORKDIR /workspace
 
-COPY app/requirements.txt /app/requirements.txt
+COPY app/requirements.txt /workspace/requirements.txt
 
 RUN python -m venv /opt/venv && \
     /opt/venv/bin/pip install --no-cache-dir --upgrade pip && \
-    /opt/venv/bin/pip install --no-cache-dir -r /app/requirements.txt
+    /opt/venv/bin/pip install --no-cache-dir -r /workspace/requirements.txt
 
-COPY app/ /app/
+COPY app/ /workspace/app/
 
 
 FROM python:3.12-slim AS final
@@ -17,7 +17,7 @@ ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-WORKDIR /app
+WORKDIR /workspace
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl && \
@@ -25,9 +25,9 @@ RUN apt-get update && \
     useradd --create-home --shell /bin/bash appuser
 
 COPY --from=builder /opt/venv /opt/venv
-COPY --from=builder /app /app
+COPY --from=builder /workspace /workspace
 
-RUN chown -R appuser:appuser /app /opt/venv
+RUN chown -R appuser:appuser /workspace /opt/venv
 
 USER appuser
 
