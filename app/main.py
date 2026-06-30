@@ -14,13 +14,26 @@ from .redis_client import redis_client
 from .routers.tasks import router as tasks_router
 
 settings = get_settings()
+
+logging.basicConfig(
+    level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO),
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    datefmt="%Y-%m-%dT%H:%M:%S",
+)
+
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    logger.info(
+        "Task Management API starting up (log_level=%s, rate_limit=%d req/min)",
+        settings.LOG_LEVEL.upper(),
+        settings.RATE_LIMIT_PER_MINUTE,
+    )
     yield
+    logger.info("Task Management API shutting down")
 
 
 app = FastAPI(title="Task Management API", lifespan=lifespan)
@@ -55,6 +68,12 @@ async def rate_limit_middleware(request: Request, call_next):
         )
 
     if count > settings.RATE_LIMIT_PER_MINUTE:
+        logger.warning(
+            "Rate limit exceeded for %s (%d/%d req/min)",
+            client_ip,
+            count,
+            settings.RATE_LIMIT_PER_MINUTE,
+        )
         return JSONResponse(
             status_code=429,
             content={"detail": "Rate limit exceeded"},
