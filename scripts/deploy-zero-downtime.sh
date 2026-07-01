@@ -61,6 +61,9 @@ if [ -n "$OLD_CONTAINER_ID" ]; then
   docker rm "$OLD_CONTAINER_ID"
 fi
 
+echo "Reloading NGINX to force DNS re-resolution..."
+docker compose -f compose/docker-compose.prod.yml exec nginx nginx -s reload
+
 echo "Reconciling state to 1 replica and bringing up other services..."
-docker compose -f compose/docker-compose.prod.yml up -d --remove-orphans
+docker compose -f compose/docker-compose.prod.yml up -d --force-recreate nginx --remove-orphans
 docker compose -f compose/docker-compose.prod.yml ps
